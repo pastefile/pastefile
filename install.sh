@@ -12,7 +12,7 @@ if [[ -x $(which lsb_release 2>/dev/null) ]]; then
 	if [[ "Debian" =~ $os_VENDOR ]]; then
 	apt-get update
 	apt-get install -y python-pip python-dev git gcc nginx-full gettext-base uwsgi
-	git clone https://github.com/guits/pastefile /var/www/pastefile
+	git clone https://github.com/pastefile/pastefile /var/www/pastefile
 	pip install -r requirements.txt
 	envsubst '$NGINX_WORKER_PROCESSES $NGINX_WORKER_CONNECTIONS $NGINX_KEEPALIVE_TIMEOUT' < ./extra/Docker/configs/nginx.conf.template > /etc/nginx/nginx.conf
 	envsubst '$NGINX_DEFAULT_PORT $NGINX_APP_NAME $UWSGI_SOCK' < ./extra/Docker/configs/vhost.conf.template > /etc/nginx/conf.d/pastefile.conf

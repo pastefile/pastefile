@@ -7,7 +7,7 @@ setup(name='pastefile',
       description=('Python-Flask written daemon to share a file via http'),
       author='guits',
       author_email='guillaume@abrioux.info',
-      url='https://github.com/guits/pastefile',
+      url='https://github.com/pastefile/pastefile',
       packages=['pastefile'],
       scripts=['pastefile-run.py'],
      )

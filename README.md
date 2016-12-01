@@ -25,7 +25,7 @@ If you just want to test pastefile quickly, we provide `pastefile-run.py` script
 ```bash
 apt-get install -y git python-dev python-pip
 pip install -r https://raw.githubusercontent.com/guits/pastefile/master/requirements.txt
-git clone https://github.com/guits/pastefile.git
+git clone https://github.com/pastefile/pastefile.git
 cd pastefile && cp pastefile.cfg.sample pastefile.cfg
 # Modify pastefile.cfg config to adapt pastefile directories
 ./pastefile-run.py -c $PWD/pastefile.cfg
@@ -38,7 +38,7 @@ pip install -r https://raw.githubusercontent.com/guits/pastefile/master/requirem
 ```
 
 ```bash
-git clone https://github.com/guits/pastefile.git /var/www/pastefile
+git clone https://github.com/pastefile/pastefile.git /var/www/pastefile
 ```
 
 > **note** that ```/var/www/pastefile``` must be writable by the uwsgi process that will be launched later. You may have to ```chown <uid>:<gid>``` it with right user/group.
@@ -135,7 +135,7 @@ systemctl start nginx.service uwsgi.service
 
 First, clone the repo where you want:
 ```bash
-git clone https://github.com/guits/pastefile.git
+git clone https://github.com/pastefile/pastefile.git
 ```
 Go to the `extra/Docker` directory :
 ```bash

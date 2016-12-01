@@ -263,7 +263,7 @@ class FlaskrTestCase(unittest.TestCase):
 
     def test_check_db_consistency(self):
         # This feature is not yet implemented 
-        # https://github.com/guits/pastefile/issues/48
+        # https://github.com/pastefile/pastefile/issues/48
         # TODO
         # Try to upload 2 file and remove one only from the disk.
         # if we can't lock the database should do noting
