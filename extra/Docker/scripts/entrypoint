@@ -8,7 +8,12 @@
 [ -z $UWSGI_SOCK ] && export UWSGI_SOCK=/tmp/uwsgi.sock
 [ -z $MAX_FILE_SIZE ] && export MAX_FILE_SIZE=1G
 
+# Doc http://nginx.org/en/docs/http/ngx_http_uwsgi_module.html
+[ -z $UWSGI_CONNECT_TIMEOUT ] && export UWSGI_CONNECT_TIMEOUT=60s
+[ -z $UWSGI_READ_TIMEOUT ] && export UWSGI_READ_TIMEOUT=60s
+[ -z $UWSGI_SEND_TIMEOUT ] && export UWSGI_SEND_TIMEOUT=60s
+
 envsubst '$NGINX_WORKER_PROCESSES $NGINX_WORKER_CONNECTIONS $NGINX_KEEPALIVE_TIMEOUT' < /opt/pastefile/nginx.conf.template > /etc/nginx/nginx.conf
-envsubst '$NGINX_DEFAULT_PORT $NGINX_APP_NAME $UWSGI_SOCK $MAX_FILE_SIZE' < /opt/pastefile/vhost.conf.template > /etc/nginx/conf.d/pastefile.conf
+envsubst '$UWSGI_CONNECT_TIMEOUT $UWSGI_READ_TIMEOUT $UWSGI_SEND_TIMEOUT $NGINX_DEFAULT_PORT $NGINX_APP_NAME $UWSGI_SOCK $MAX_FILE_SIZE' < /opt/pastefile/vhost.conf.template > /etc/nginx/conf.d/pastefile.conf
 nginx
 exec uwsgi -s $UWSGI_SOCK -w pastefile.app:app --chdir /var/www/pastefile --uid 33 --gid 33 --env PASTEFILE_SETTINGS=/etc/pastefile.cfg --enable-threads

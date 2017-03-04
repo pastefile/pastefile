@@ -154,16 +154,19 @@ this is the easiest way to get a pastefile application running quickly.
 
 # Options
 
-|Parameters       | Usage                                                                                                                                      |
-|-----------------|--------------------------------------------------------------------------------------------------------------------------------------------|
-|UPLOAD_FOLDER    | Where the files are stored.                                                                                                                |
-|FILE_LIST        | The file that act as the db (jsondb)                                                                                                       |
-|TMP_FOLDER       | The folder where the files are stored during the transfer                                                                                  |
-|EXPIRE           | How many long the files are stored (in seconds)                                                                                            |
-|DEBUG_PORT       | The port used for debugging mode                                                                                                           |
-|LOG              | The path to the log file                                                                                                                   |
-|DISABLED_FEATURE | List of features you want to disable. Allowed value : `delete`, `ls`                                                                       |
-|DISPLAY_FOR      | Display file like png or txt directly in your browser instead of asking for download. Allowed list from flask `request.user_agent.browser` |
+|Parameters              | Usage                                                                                                                                                                                       |
+|------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|UPLOAD_FOLDER           | Where the files are stored.                                                                                                                                                                 |
+|FILE_LIST               | The file that act as the db (jsondb)                                                                                                                                                        |
+|TMP_FOLDER              | The folder where the files are stored during the transfer                                                                                                                                   |
+|EXPIRE                  | How many long the files are stored (in seconds)                                                                                                                                             |
+|DEBUG_PORT              | The port used for debugging mode                                                                                                                                                            |
+|LOG                     | The path to the log file                                                                                                                                                                    |
+|DISABLED_FEATURE        | List of features you want to disable. Allowed value : `delete`, `ls`                                                                                                                        |
+|DISPLAY_FOR             | Display file like png or txt directly in your browser instead of asking for download. Allowed list from flask `request.user_agent.browser`                                                  |
+|UWSGI_CONNECT_TIMEOUT   | Defines a timeout for establishing a connection with a uwsgi server. Default 60s                                                                                                            |
+|UWSGI_READ_TIMEOUT      | Defines a timeout for reading a response from the uwsgi server. The timeout is set only between two successive read operations, not for the transmission of the whole response. Default 60s |
+|UWSGI_SEND_TIMEOUT      | Sets a timeout for transmitting a request to the uwsgi server. The timeout is set only between two successive write operations, not for the transmission of the whole request. Default 60s  |
 
 > **Note**:
 
