@@ -7,6 +7,9 @@ server {
 
         location @${NGINX_APP_NAME} {
             include uwsgi_params;
+            uwsgi_connect_timeout ${UWSGI_CONNECT_TIMEOUT};
+            uwsgi_read_timeout ${UWSGI_READ_TIMEOUT};
+            uwsgi_send_timeout ${UWSGI_SEND_TIMEOUT};
             uwsgi_pass unix://${UWSGI_SOCK};
         }
 }
