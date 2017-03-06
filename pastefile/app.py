@@ -13,7 +13,9 @@ LOG = app.logger
 LOG.setLevel(logging.DEBUG)
 hdl_stream = logging.StreamHandler()
 hdl_stream.setLevel(logging.INFO)
-formatter_stream = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+formatter_stream = logging.Formatter('%(asctime)s - '
+                                     '%(name)s - '
+                                     '%(levelname)s - %(message)s')
 hdl_stream.setFormatter(formatter_stream)
 LOG.addHandler(hdl_stream)
 
@@ -29,14 +31,16 @@ def init_default_configuration(_app):
                       'DISPLAY_FOR': ['chrome', 'firefox']
                       }
     for config_name, default_value in default_config.iteritems():
-        _app.config.setdefault(config_name, os.environ.get(config_name, default_value))
+        _app.config.setdefault(config_name,
+                               os.environ.get(config_name, default_value))
 
 
 def init_check_directories(_app):
     for key in ["UPLOAD_FOLDER", "FILE_LIST", "TMP_FOLDER", "LOG"]:
         directory = _app.config[key].rstrip('/')
         if not os.path.isdir(os.path.dirname(directory)):
-            LOG.error("'%s' doesn't exist or is not a directory" % os.path.dirname(directory))
+            LOG.error("'%s' doesn't exist or is not a directory" %
+                      os.path.dirname(directory))
             return False
 
     for key in ["UPLOAD_FOLDER", "TMP_FOLDER"]:
@@ -64,7 +68,7 @@ except RuntimeError:
     LOG.warning('PASTEFILE_SETTINGS envvar is not set,'
                 'configuring using envvar.')
 except IOError:
-    LOG.error('The file specified in PASTEFILE_SETTINGS envvar',
+    LOG.error('The file specified in PASTEFILE_SETTINGS envvar '
               'doesn\'t exist')
     exit(1)
 
@@ -73,7 +77,9 @@ try:
     if os.environ['TESTING'] == 'TRUE':
         hdl_file = logging.FileHandler(filename=app.config['LOG'])
         hdl_file.setLevel(logging.DEBUG)
-        formatter_file = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        formatter_file = logging.Formatter('%(asctime)s'
+                                           ' - %(name)s'
+                                           ' - %(levelname)s - %(message)s')
         hdl_file.setFormatter(formatter_file)
         LOG.addHandler(hdl_file)
     else:
@@ -84,8 +90,9 @@ except KeyError:
     pass
 
 LOG.warning("===== Running config =====")
-for c,v in app.config.iteritems():
-  LOG.warning("%s: %s" % (c,v))
+for c, v in app.config.iteritems():
+    LOG.warning("%s: %s" % (c, v))
+
 
 @app.route('/', methods=['GET', 'POST'])
 def upload_file():
@@ -117,7 +124,8 @@ def get_or_delete_file(id_file):
     if request.method == 'DELETE':
         try:
             if 'delete' in app.config['DISABLED_FEATURE']:
-                LOG.info("[delete] Tried to call delete but this url is disabled")
+                LOG.info("[delete] Tried to call"
+                         "delete but this url is disabled")
                 return 'Administrator disabled the delete option.\n'
         except (KeyError, TypeError):
             pass
@@ -138,7 +146,8 @@ def list_all_files():
     controller.clean_files(dbfile=app.config['FILE_LIST'],
                            expire=app.config['EXPIRE'])
 
-    return jsonify(controller.get_all_files(request=request, config=app.config))
+    return jsonify(controller.get_all_files(
+                   request=request, config=app.config))
 
 
 @app.errorhandler(404)
@@ -147,12 +156,13 @@ def page_not_found(e):
     base_url = utils.build_base_url(env=request.environ)
 
     helps = (
-      ("Upload a file:", "curl %s -F file=@**filename**" % base_url),
-      ("View all uploaded files:", "curl %s/ls" % base_url),
-      ("Get infos about one file:", "curl %s/**file_id**/infos" % base_url),
-      ("Get a file:", "curl -JO %s/**file_id**" % base_url),
-      ("Delete a file:", "curl -XDELETE %s/**id**" % base_url),
-      ("Create an alias for cli usage", 'pastefile() { curl -F file=@"$1" %s; }' % base_url),
+        ("Upload a file:", "curl %s -F file=@**filename**" % base_url),
+        ("View all uploaded files:", "curl %s/ls" % base_url),
+        ("Get infos about one file:", "curl %s/**file_id**/infos" % base_url),
+        ("Get a file:", "curl -JO %s/**file_id**" % base_url),
+        ("Delete a file:", "curl -XDELETE %s/**id**" % base_url),
+        ("Create an alias for cli usage",
+         'pastefile() { curl -F file=@"$1" %s; }' % base_url),
     )
     context = {'user_agent': request.headers.get('User-Agent', ''),
                'helps': helps}

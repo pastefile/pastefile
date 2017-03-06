@@ -13,6 +13,7 @@ from werkzeug import secure_filename
 
 LOG = logging.getLogger(__name__)
 
+
 def get_infos_file_from_md5(md5, dbfile):
     # Open JsonDB for read only
     db = JsonDB(dbfile=dbfile)
@@ -48,10 +49,11 @@ def get_file_info(id_file, config, env):
     if not infos:
         return False
     try:
-        size = utils.human_readable(os.stat(infos['storage_full_filename']).st_size)
+        size = utils.human_readable(os.stat(
+                                    infos['storage_full_filename']).st_size)
         expire = datetime.datetime.fromtimestamp(
-                      int(infos['timestamp']) +
-                      int(config['EXPIRE'])).strftime('%d-%m-%Y %H:%M:%S'),
+            int(infos['timestamp']) +
+            int(config['EXPIRE'])).strftime('%d-%m-%Y %H:%M:%S'),
         file_infos = {
             'name': infos['real_name'],
             'md5': id_file,
@@ -69,10 +71,12 @@ def get_file_info(id_file, config, env):
         return False
 
 
-def add_new_file(filename, source, dest, db, mime_type, type, md5, burn_after_read):
+def add_new_file(filename, source, dest,
+                 db, mime_type, type, md5, burn_after_read):
 
-    # IMPROVE : possible "bug" If a file is already uploaded, the burn_after_read
-    #           Will not bu updated
+    # IMPROVE : possible "bug" If a file is already uploaded,
+    #           the burn_after_read will not be updated
+    #
     # File already exist, return True and remove ths source
     if md5 in db.db:
         try:
@@ -111,8 +115,8 @@ def upload_file(request, config):
 
     # Write tmp file on disk
     try:
-        file_md5, tmp_full_filename = utils.write_tmpfile_to_disk(file=request.files['file'],
-                                                                  dest_dir=config['TMP_FOLDER'])
+        file_md5, tmp_full_filename = utils.write_tmpfile_to_disk(
+            file=request.files['file'], dest_dir=config['TMP_FOLDER'])
     except IOError:
         return 'Server error, contact administrator\n'
 
@@ -147,7 +151,8 @@ def upload_file(request, config):
         except OSError as e:
             LOG.error("Can't remove tmp file: %s" % e)
 
-        LOG.info('Unable lock the db and find the file %s in db during upload' % file_md5)
+        LOG.info('Unable lock the db and find'
+                 'the file %s in db during upload' % file_md5)
         return 'Unable to upload the file, try again later ...\n'
 
     LOG.info("[POST] Client %s has successfully uploaded: %s (%s)"
@@ -195,12 +200,14 @@ def get_file(request, id_file, config):
     else:
         path = config['UPLOAD_FOLDER']
 
-    # If the user agent is in the display list, format headers to direct display feature
+    # If the user agent is in the display list,
+    # format headers to direct display feature
     if request.user_agent.browser in config['DISPLAY_FOR']:
         return send_from_directory(path,
                                    filename,
                                    mimetype=db.db[id_file]['mime_type'],
-                                   attachment_filename=db.db[id_file]['real_name'])
+                                   attachment_filename=db.db[id_file]
+                                   ['real_name'])
 
     # Else keep the regular send file
     return send_from_directory(path,

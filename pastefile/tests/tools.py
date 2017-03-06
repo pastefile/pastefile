@@ -9,6 +9,7 @@ def write_random_file(filename):
     rnd_str = os.urandom(1024)
     return write_file(filename=filename, content=rnd_str)
 
+
 def write_file(filename, content):
     "Write file on disk and return the md5"
     with open(filename, 'w+') as f:
