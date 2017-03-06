@@ -9,7 +9,6 @@ RUN chown -R www-data:www-data /opt/pastefile
 
 COPY ./extra/Docker/configs/nginx.conf.template /opt/pastefile/nginx.conf.template
 COPY ./extra/Docker/configs/vhost.conf.template /opt/pastefile/vhost.conf.template
-COPY ./extra/Docker/configs/pastefile.cfg.template /etc/pastefile.cfg
 COPY ./extra/Docker/scripts/entrypoint /entrypoint
 
 ENTRYPOINT ["/entrypoint"]
