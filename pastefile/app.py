@@ -19,14 +19,17 @@ LOG.addHandler(hdl_stream)
 
 
 def init_default_configuration(_app):
-    _app.config.setdefault('UPLOAD_FOLDER', "/opt/pastefile/files")
-    _app.config.setdefault('FILE_LIST', "/opt/pastefile/uploaded_files_jsondb")
-    _app.config.setdefault('TMP_FOLDER', "/opt/pastefile/tmp")
-    _app.config.setdefault('EXPIRE',  "86400")
-    _app.config.setdefault('DEBUG_PORT',  "5000")
-    _app.config.setdefault('LOG', "/opt/pastefile/pastefile.log")
-    _app.config.setdefault('DISABLED_FEATURE', [])
-    _app.config.setdefault('DISPLAY_FOR', ['chrome', 'firefox'])
+    default_config = {'UPLOAD_FOLDER': '/opt/pastefile/files',
+                      'FILE_LIST': '/opt/pastefile/uploaded_files_jsondb',
+                      'TMP_FOLDER': '/opt/pastefile/tmp',
+                      'EXPIRE': '86400',
+                      'DEBUG_PORT': '5000',
+                      'LOG': '/opt/pastefile/pastefile.log',
+                      'DISABLED_FEATURE': [],
+                      'DISPLAY_FOR': ['chrome', 'firefox']
+                      }
+    for config_name, default_value in default_config.iteritems():
+        _app.config.setdefault(config_name, os.environ.get(config_name, default_value))
 
 
 def init_check_directories(_app):
@@ -58,7 +61,11 @@ try:
     app.config.from_envvar('PASTEFILE_SETTINGS')
     app.config['instance_path'] = app.instance_path
 except RuntimeError:
-    LOG.error('PASTEFILE_SETTINGS envvar is not set')
+    LOG.warning('PASTEFILE_SETTINGS envvar is not set,'
+                'configuring using envvar.')
+except IOError:
+    LOG.error('The file specified in PASTEFILE_SETTINGS envvar',
+              'doesn\'t exist')
     exit(1)
 
 
