@@ -76,6 +76,9 @@ try:
 except KeyError:
     pass
 
+LOG.warning("===== Running config =====")
+for c,v in app.config.iteritems():
+  LOG.warning("%s: %s" % (c,v))
 
 @app.route('/', methods=['GET', 'POST'])
 def upload_file():
