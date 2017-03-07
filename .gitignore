@@ -3,3 +3,4 @@
 .tox/
 pastefile.egg-info/
 /tests/
+pastefile.log
