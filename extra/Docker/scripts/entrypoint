@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 [ -z $NGINX_WORKER_PROCESSES ] && export NGINX_WORKER_PROCESSES=auto
 [ -z $NGINX_WORKER_CONNECTIONS ] && export NGINX_WORKER_CONNECTIONS=1024
 [ -z $NGINX_KEEPALIVE_TIMEOUT ] && export NGINX_KEEPALIVE_TIMEOUT=1
@@ -13,16 +15,6 @@
 [ -z $UWSGI_READ_TIMEOUT ] && export UWSGI_READ_TIMEOUT=60s
 [ -z $UWSGI_SEND_TIMEOUT ] && export UWSGI_SEND_TIMEOUT=60s
 
-[ -z $HOSTNAME ] && export HOSTNAME="pastefile.fr"
-[ -z $UPLOAD_FOLDER ] && export UPLOAD_FOLDER="/opt/pastefile/files"
-[ -z $FILE_LIST ] && export FILE_LIST="/opt/pastefile/pastefile.db"
-[ -z $TMP_FOLDER ] && export TMP_FOLDER="/opt/pastefile/tmp"
-[ -z $EXPIRE ] && export EXPIRE="1209600"
-[ -z $DEBUG_PORT ] && export DEBUG_PORT=5000
-[ -z $LOG ] $$ export LOG="/opt/pastefile/pastefile.log"
-[ -z $DISABLED_FEATURE ] && DISABLED_FEATURE="[ 'ls' ]"
-[ -z $DISPLAY_FOR ] && DISPLAY_FOR="['chrome', 'firefor']"
-
 envsubst '$NGINX_WORKER_PROCESSES $NGINX_WORKER_CONNECTIONS $NGINX_KEEPALIVE_TIMEOUT' < /opt/pastefile/nginx.conf.template > /etc/nginx/nginx.conf
 envsubst '$UWSGI_CONNECT_TIMEOUT $UWSGI_READ_TIMEOUT $UWSGI_SEND_TIMEOUT $NGINX_DEFAULT_PORT $NGINX_APP_NAME $UWSGI_SOCK $MAX_FILE_SIZE' < /opt/pastefile/vhost.conf.template > /etc/nginx/conf.d/pastefile.conf
 nginx
@@ -31,13 +23,4 @@ exec uwsgi -s $UWSGI_SOCK \
 -w pastefile.app:app \
 --chdir /var/www/pastefile \
 --uid 33 --gid 33 \
---env HOSTNAME=$HOSTNAME \
---env UPLOAD_FOLDER=$UPLOAD_FOLDER \
---env FILE_LIST=$FILE_LIST \
---env TMP_FOLDER=$TMP_FOLDER \
---env EXPIRE=$EXPIRE \
---env DEBUG_PORT=$DEBUG_PORT \
---env LOG=$LOG \
---env DISABLED_FEATURE=$DISABLED_FEATURE \
---env DISPLAY_FOR=$DISPLAY_FOR \
 --enable-threads
