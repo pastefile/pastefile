@@ -8,6 +8,32 @@ from flask import render_template
 from pastefile import utils
 from pastefile import controller
 
+default_config = {
+    'UPLOAD_FOLDER': {
+        'value': '/opt/pastefile/files',
+        'type': str()},
+    'FILE_LIST': {
+        'value': '/opt/pastefile/uploaded_files_jsondb',
+        'type': str()},
+    'TMP_FOLDER': {
+        'value': '/opt/pastefile/tmp',
+        'type': str()},
+    'EXPIRE': {
+        'value': '86400',
+        'type': str()},
+    'DEBUG_PORT': {
+        'value': '5000',
+        'type': str()},
+    'LOG': {
+        'value': '/opt/pastefile/pastefile.log',
+        'type': str()},
+    'DISABLED_FEATURE': {
+        'value': 'ls',
+        'type': list()},
+    'DISPLAY_FOR': {
+        'value': 'chrome,firefox',
+        'type': list()}
+    }
 app = Flask("pastefile")
 LOG = app.logger
 LOG.setLevel(logging.DEBUG)
@@ -20,19 +46,17 @@ hdl_stream.setFormatter(formatter_stream)
 LOG.addHandler(hdl_stream)
 
 
-def init_default_configuration(_app):
-    default_config = {'UPLOAD_FOLDER': '/opt/pastefile/files',
-                      'FILE_LIST': '/opt/pastefile/uploaded_files_jsondb',
-                      'TMP_FOLDER': '/opt/pastefile/tmp',
-                      'EXPIRE': '86400',
-                      'DEBUG_PORT': '5000',
-                      'LOG': '/opt/pastefile/pastefile.log',
-                      'DISABLED_FEATURE': [],
-                      'DISPLAY_FOR': ['chrome', 'firefox']
-                      }
-    for config_name, default_value in default_config.iteritems():
-        _app.config.setdefault(config_name,
-                               os.environ.get(config_name, default_value))
+def validate(config, default):
+    for config_name, value in config.iteritems():
+        if config_name not in default.keys():
+            continue
+        if default[config_name]['type'] == list() and type(value) == str:
+            config[config_name] = [i.strip() for i in value.split(',')]
+
+
+def set_default(_app, default):
+    for config_name, _default in default.iteritems():
+        _app.config[config_name] = os.getenv(config_name, _default['value'])
 
 
 def init_check_directories(_app):
@@ -46,10 +70,12 @@ def init_check_directories(_app):
     for key in ["UPLOAD_FOLDER", "TMP_FOLDER"]:
         directory = _app.config[key].rstrip('/')
         if os.path.exists(directory):
+            LOG.info("%s already exists, skipping creation." % directory)
             continue
         LOG.warning("'%s' doesn't exist, creating" % directory)
         try:
             os.makedirs(directory)
+            LOG.warning("%s directory created" % directory)
         except OSError as e:
             LOG.error("%s" % e)
             return False
@@ -58,36 +84,27 @@ def init_check_directories(_app):
 
 
 # Set default configuration values
-init_default_configuration(_app=app)
-
-
+set_default(_app=app, default=default_config)
 try:
+    LOG.debug("CWD=%s" % os.getcwd())
+    LOG.debug("Trying to set from configuration file %s" %
+              os.getenv('PASTEFILE_SETTINGS'))
     app.config.from_envvar('PASTEFILE_SETTINGS')
     app.config['instance_path'] = app.instance_path
-except RuntimeError:
-    LOG.warning('PASTEFILE_SETTINGS envvar is not set,'
-                'configuring using envvar.')
-except IOError:
-    LOG.error('The file specified in PASTEFILE_SETTINGS envvar '
-              'doesn\'t exist')
-    exit(1)
+except (RuntimeError, IOError) as e:
+    LOG.warning('PASTEFILE_SETTINGS configuration'
+                ' file not available.\n'
+                'message was: %s' % e)
+finally:
+    validate(config=app.config, default=default_config)
+    LOG.debug("%s" % app.config)
 
-
-try:
-    if os.environ['TESTING'] == 'TRUE':
-        hdl_file = logging.FileHandler(filename=app.config['LOG'])
-        hdl_file.setLevel(logging.DEBUG)
-        formatter_file = logging.Formatter('%(asctime)s'
-                                           ' - %(name)s'
-                                           ' - %(levelname)s - %(message)s')
-        hdl_file.setFormatter(formatter_file)
-        LOG.addHandler(hdl_file)
-    else:
-        # check dirs only in non testing mode
-        if not init_check_directories(_app=app):
-            exit(1)
-except KeyError:
-    pass
+if not os.getenv('TESTING') == 'TRUE':
+    LOG.info("Checking directories...")
+# check dirs only in non testing mode
+    if not init_check_directories(_app=app):
+        exit(1)
+    LOG.info("Directories OK")
 
 LOG.warning("===== Running config =====")
 for c, v in app.config.iteritems():

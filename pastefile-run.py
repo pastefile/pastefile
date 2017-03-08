@@ -14,6 +14,7 @@ def parse_args():
     args = parser.parse_args()
     os.environ["PASTEFILE_SETTINGS"] = args.config
 
+
 if __name__ == '__main__':
     parse_args()
     from pastefile.app import app
