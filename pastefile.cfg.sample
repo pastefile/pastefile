@@ -7,7 +7,7 @@ LOG = "/opt/pastefile/pastefile.log"
 
 # List of features you want to disable
 # Allowed value : delete, ls
-DISABLED_FEATURE = []
+DISABLED_FEATURE = 'ls'
 # Display file like png or txt directly in your browser instead of asking for download.
 # Give the list of user agent on wich you want to enable direct display feature. Allowed list from flask `request.user_agent.browser`
-DISPLAY_FOR = ['chrome', 'firefox']
+DISPLAY_FOR = 'chrome,firefox'

@@ -10,4 +10,4 @@ setup(name='pastefile',
       url='https://github.com/pastefile/pastefile',
       packages=['pastefile'],
       scripts=['pastefile-run.py'],
-     )
+      )

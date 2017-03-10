@@ -6,7 +6,6 @@ import unittest
 import json
 import shutil
 import mock
-
 import pastefile.app as flaskr
 from pastefile.tests.tools import write_random_file, write_file
 from pastefile.jsondb import JsonDB
@@ -23,6 +22,7 @@ class FlaskrTestCase(unittest.TestCase):
         self.testdir = './tests'
         flaskr.app.config['TESTING'] = True
         self.clean_dir()
+        os.makedirs(self.testdir)
         os.makedirs(osjoin(self.testdir, 'files'))
         os.makedirs(osjoin(self.testdir, 'tmp'))
         self.app = flaskr.app.test_client()
