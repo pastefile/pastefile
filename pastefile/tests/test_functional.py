@@ -273,7 +273,7 @@ class FlaskrTestCase(unittest.TestCase):
         rv = self.app.post('/', data={'file': (open(_file, 'r'),
                            'test_pastefile_random.file'), 'burn': 'True', })
 
-		# Check if the flag burn is set on the file
+        # Check if the flag burn is set on the file
         rv = self.app.get('/%s/infos' % test_md5, headers={'User-Agent': 'curl'})
         rv_json = json.loads(rv.get_data())
         self.assertEquals(rv_json['burn_after_read'], 'True')

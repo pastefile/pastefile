@@ -179,6 +179,8 @@ this is the easiest way to get a pastefile application running quickly.
 > if the parameter is a string, you must quote it with **""**
 
 
+> **Optimize** : Pastefile use `shutil.move`. To improve performance we recommand you to use the same filesystem for `TMP_FOLDER` and `UPLOAD_FOLDER` to allow rename file instead of file copy.
+
 # Usage
 Upload a file:
 ```bash
@@ -187,7 +189,7 @@ curl -F file=@</path/to/the/file> http://pastefile.fr
 
 Upload a file with burn after read :
 ```bash
-curl -F file=@</path/to/the/file> -F burn=truehttp://pastefile.fr
+curl -F file=@</path/to/the/file> -F burn=true http://pastefile.fr
 ```
 
 View all uploaded files:
