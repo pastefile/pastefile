@@ -185,6 +185,11 @@ Upload a file:
 curl -F file=@</path/to/the/file> http://pastefile.fr
 ```
 
+Upload a file with burn after read :
+```bash
+curl -F file=@</path/to/the/file> -F burn=truehttp://pastefile.fr
+```
+
 View all uploaded files:
 ```bash
 curl http://pastefile.fr/ls
