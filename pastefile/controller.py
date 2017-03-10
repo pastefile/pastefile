@@ -6,10 +6,12 @@ import time
 import magic
 import datetime
 import logging
+from shutil import move
 from pastefile import utils
 from jsondb import JsonDB
 from flask import send_from_directory, abort
 from werkzeug import secure_filename
+from distutils.util import strtobool
 
 LOG = logging.getLogger(__name__)
 
@@ -74,23 +76,12 @@ def get_file_info(id_file, config, env):
 def add_new_file(filename, source, dest,
                  db, mime_type, type, md5, burn_after_read):
 
-    # IMPROVE : possible "bug" If a file is already uploaded,
-    #           the burn_after_read will not be updated
-    #
-    # File already exist, return True and remove ths source
-    if md5 in db.db:
-        try:
-            os.remove(source)
-        except OSError as e:
-            LOG.error("Can't remove tmp file: %s" % e)
-        return True
-
     # If no lock, return false
     if db.lock_error:
         return False
 
     try:
-        os.rename(source, dest)
+        move(source, dest)
     except OSError as e:
         LOG.error("Can't move processing file to storage directory: %s" % e)
         return False
@@ -107,7 +98,9 @@ def add_new_file(filename, source, dest,
 
 
 def upload_file(request, config):
-    value_burn_after_read = request.form.getlist('burn')
+
+    value_burn_after_read = strtobool(request.form.get('burn', 'false'))
+
     if value_burn_after_read:
         burn_after_read = True
     else:

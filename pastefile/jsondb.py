@@ -5,6 +5,7 @@ import logging
 import fcntl
 import time
 import os
+from shutil import move
 
 
 def timeout(timeout=3, start=None):
@@ -67,7 +68,7 @@ class JsonDB(object):
         try:
             tmp_file = '%s.atomic' % self._dbfile
             json.dump(self.db, open(tmp_file, 'w'))
-            os.rename(tmp_file, self._dbfile)
+            move(tmp_file, self._dbfile)
         except OSError as e:
             self._logger.error('Error while saving the db: %s' % e)
 

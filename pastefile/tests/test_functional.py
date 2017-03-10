@@ -114,16 +114,6 @@ class FlaskrTestCase(unittest.TestCase):
         md5s = sorted([md5 for md5 in db_content.keys()])
         self.assertEquals(sorted([test_md5, test_md5_bis]), md5s)
 
-        # can't lock the database,
-        # post should work for an existing file (using last test file)
-        with mock.patch('pastefile.controller.JsonDB._lock',
-                        mock.Mock(return_value=False)):
-            # Take file from last test
-            rv = self.app.post('/', data={'file': (open(_file_bis, 'r'),
-                               'test_pastefile_random.file'), })
-        self.assertEquals(rv.get_data(),
-                          "http://localhost/%s\n" % (test_md5_bis))
-
         # can't lock the database, get should work (using last test file)
         with mock.patch('pastefile.controller.JsonDB._lock',
                         mock.Mock(return_value=False)):
@@ -283,6 +273,11 @@ class FlaskrTestCase(unittest.TestCase):
         rv = self.app.post('/', data={'file': (open(_file, 'r'),
                            'test_pastefile_random.file'), 'burn': 'True', })
 
+		# Check if the flag burn is set on the file
+        rv = self.app.get('/%s/infos' % test_md5, headers={'User-Agent': 'curl'})
+        rv_json = json.loads(rv.get_data())
+        self.assertEquals(rv_json['burn_after_read'], 'True')
+
         # Try to get the file but can't acquire the lock.
         # Shouldn't not send the file.
         with mock.patch('pastefile.controller.JsonDB._lock',
@@ -301,6 +296,28 @@ class FlaskrTestCase(unittest.TestCase):
         # a 404 since it is 'burned'.
         rv = self.app.get('/%s' % test_md5, headers={'User-Agent': 'curl'})
         self.assertEquals(rv.status, '404 NOT FOUND')
+
+		# This should file should have a burned flag
+        rv = self.app.get('/%s/infos' % test_md5, headers={'User-Agent': 'curl'})
+        rv_json = json.loads(rv.get_data())
+        self.assertEquals(rv_json['burn_after_read'], 'Burned')
+
+        ## Upload the file again, it should be unburned
+        rv = self.app.post('/', data={'file': (open(_file, 'r'),
+                           'test_pastefile_random.file'), 'burn': 'True', })
+
+        rv = self.app.get('/%s/infos' % test_md5, headers={'User-Agent': 'curl'})
+        rv_json = json.loads(rv.get_data())
+        self.assertEquals(rv_json['burn_after_read'], 'True')
+
+        # Upload the file again to disable burn
+        rv = self.app.post('/', data={'file': (open(_file, 'r'),
+                           'test_pastefile_random.file'), 'burn': 'False', })
+
+        rv = self.app.get('/%s/infos' % test_md5, headers={'User-Agent': 'curl'})
+        rv_json = json.loads(rv.get_data())
+        self.assertEquals(rv_json['burn_after_read'], 'False')
+
 
     def test_check_db_consistency(self):
         # This feature is not yet implemented
