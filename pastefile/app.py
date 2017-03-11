@@ -174,12 +174,14 @@ def page_not_found(e):
 
     helps = (
         ("Upload a file:", "curl %s -F file=@**filename**" % base_url),
+        ("Upload a file with burn after read:",
+            "curl %s -F burn=true -F file=@**filename**" % base_url),
         ("View all uploaded files:", "curl %s/ls" % base_url),
         ("Get infos about one file:", "curl %s/**file_id**/infos" % base_url),
         ("Get a file:", "curl -JO %s/**file_id**" % base_url),
         ("Delete a file:", "curl -XDELETE %s/**id**" % base_url),
         ("Create an alias for cli usage",
-         'pastefile() { curl -F file=@"$1" %s; }' % base_url),
+            'pastefile() { curl -F file=@"$1" %s; }' % base_url),
     )
     context = {'user_agent': request.headers.get('User-Agent', ''),
                'helps': helps}
