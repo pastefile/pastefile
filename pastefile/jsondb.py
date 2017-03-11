@@ -4,7 +4,6 @@ import json
 import logging
 import fcntl
 import time
-import os
 from shutil import move
 
 

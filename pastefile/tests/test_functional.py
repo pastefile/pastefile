@@ -274,7 +274,8 @@ class FlaskrTestCase(unittest.TestCase):
                            'test_pastefile_random.file'), 'burn': 'True', })
 
         # Check if the flag burn is set on the file
-        rv = self.app.get('/%s/infos' % test_md5, headers={'User-Agent': 'curl'})
+        rv = self.app.get('/%s/infos' % test_md5,
+                          headers={'User-Agent': 'curl'})
         rv_json = json.loads(rv.get_data())
         self.assertEquals(rv_json['burn_after_read'], 'True')
 
@@ -297,16 +298,18 @@ class FlaskrTestCase(unittest.TestCase):
         rv = self.app.get('/%s' % test_md5, headers={'User-Agent': 'curl'})
         self.assertEquals(rv.status, '404 NOT FOUND')
 
-		# This should file should have a burned flag
-        rv = self.app.get('/%s/infos' % test_md5, headers={'User-Agent': 'curl'})
+        # This should file should have a burned flag
+        rv = self.app.get('/%s/infos' % test_md5,
+                          headers={'User-Agent': 'curl'})
         rv_json = json.loads(rv.get_data())
         self.assertEquals(rv_json['burn_after_read'], 'Burned')
 
-        ## Upload the file again, it should be unburned
+        # Upload the file again, it should be unburned
         rv = self.app.post('/', data={'file': (open(_file, 'r'),
                            'test_pastefile_random.file'), 'burn': 'True', })
 
-        rv = self.app.get('/%s/infos' % test_md5, headers={'User-Agent': 'curl'})
+        rv = self.app.get('/%s/infos' % test_md5,
+                          headers={'User-Agent': 'curl'})
         rv_json = json.loads(rv.get_data())
         self.assertEquals(rv_json['burn_after_read'], 'True')
 
@@ -314,10 +317,10 @@ class FlaskrTestCase(unittest.TestCase):
         rv = self.app.post('/', data={'file': (open(_file, 'r'),
                            'test_pastefile_random.file'), 'burn': 'False', })
 
-        rv = self.app.get('/%s/infos' % test_md5, headers={'User-Agent': 'curl'})
+        rv = self.app.get('/%s/infos' % test_md5,
+                          headers={'User-Agent': 'curl'})
         rv_json = json.loads(rv.get_data())
         self.assertEquals(rv_json['burn_after_read'], 'False')
-
 
     def test_check_db_consistency(self):
         # This feature is not yet implemented
