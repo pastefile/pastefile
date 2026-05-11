@@ -9,7 +9,7 @@ from shutil import move
 
 def timeout(timeout=3, start=None):
     now = int(time.time())
-    if (now - start) >= 3:
+    if (now - start) >= timeout:
         return True
     return False
 
@@ -59,14 +59,16 @@ class JsonDB(object):
 
     def load(self):
         try:
-            self.db = json.load(open(self._dbfile, 'r'))
+            with open(self._dbfile, 'r') as f:
+                self.db = json.load(f)
         except (IOError, AttributeError, ValueError) as e:
             self._logger.debug("Can't load file: %s" % e)
 
     def save(self):
         try:
             tmp_file = '%s.atomic' % self._dbfile
-            json.dump(self.db, open(tmp_file, 'w'))
+            with open(tmp_file, 'w') as f:
+                json.dump(self.db, f)
             move(tmp_file, self._dbfile)
         except OSError as e:
             self._logger.error('Error while saving the db: %s' % e)
