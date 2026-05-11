@@ -1,5 +1,3 @@
-nose
+pytest
 tox
-unittest2
-mock
 flake8
