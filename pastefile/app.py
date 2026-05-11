@@ -87,9 +87,11 @@ def init_check_directories(_app):
 set_default(_app=app, default=default_config)
 try:
     LOG.debug("CWD=%s" % os.getcwd())
-    LOG.debug("Trying to set from configuration file %s" %
-              os.getenv('PASTEFILE_SETTINGS'))
-    app.config.from_envvar('PASTEFILE_SETTINGS')
+    _settings_path = os.getenv('PASTEFILE_SETTINGS')
+    LOG.debug("Trying to set from configuration file %s" % _settings_path)
+    if not _settings_path:
+        raise RuntimeError('PASTEFILE_SETTINGS is not set')
+    app.config.from_pyfile(os.path.abspath(_settings_path))
     app.config['instance_path'] = app.instance_path
 except (RuntimeError, IOError) as e:
     LOG.warning('PASTEFILE_SETTINGS configuration'
