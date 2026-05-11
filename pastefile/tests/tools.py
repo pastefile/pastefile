@@ -12,6 +12,8 @@ def write_random_file(filename):
 
 def write_file(filename, content):
     "Write file on disk and return the md5"
-    with open(filename, 'w+') as f:
-        f.writelines(content)
+    if isinstance(content, str):
+        content = content.encode('utf-8')
+    with open(filename, 'wb+') as f:
+        f.write(content)
     return utils.get_md5(filename)
