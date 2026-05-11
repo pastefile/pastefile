@@ -8,12 +8,36 @@ import datetime
 import logging
 from shutil import move
 from pastefile import utils
-from jsondb import JsonDB
+from pastefile.jsondb import JsonDB
 from flask import send_from_directory, abort
-from werkzeug import secure_filename
-from distutils.util import strtobool
+from werkzeug.utils import secure_filename
 
 LOG = logging.getLogger(__name__)
+
+DISPLAYABLE_MIME_PREFIXES = ('image/', 'text/', 'video/', 'audio/')
+DISPLAYABLE_MIME_TYPES = {'application/pdf', 'application/json'}
+
+_TRUE_VALUES = {'y', 'yes', 't', 'true', 'on', '1'}
+
+
+def strtobool(val):
+    """Return True if val is a truthy string, else False."""
+    return str(val).strip().lower() in _TRUE_VALUES
+
+
+def _is_cli_client(user_agent):
+    """Return True if the user agent looks like a CLI HTTP client."""
+    ua = (user_agent or '').lower()
+    return any(token in ua for token in ('curl', 'wget', 'httpie'))
+
+
+def _is_displayable_in_browser(mime_type):
+    """Return True if the mime type is one a browser can render inline."""
+    if not mime_type:
+        return False
+    if mime_type in DISPLAYABLE_MIME_TYPES:
+        return True
+    return mime_type.startswith(DISPLAYABLE_MIME_PREFIXES)
 
 
 def get_infos_file_from_md5(md5, dbfile):
@@ -41,7 +65,7 @@ def clean_files(dbfile, expire=86400):
         if db.lock_error:
             LOG.warning('Cant clean files')
             return False
-        for k, v in list(db.db.iteritems()):
+        for k, v in list(db.db.items()):
             if int(db.db[k]['timestamp']) < int(time.time() - int(expire)):
                 remove_file(db=db, file_id=k)
 
@@ -193,21 +217,17 @@ def get_file(request, id_file, config):
     else:
         path = config['UPLOAD_FOLDER']
 
-    # If the user agent is in the display list,
-    # format headers to direct display feature
-    if request.user_agent.browser in config['DISPLAY_FOR']:
-        return send_from_directory(path,
-                                   filename,
-                                   mimetype=db.db[id_file]['mime_type'],
-                                   attachment_filename=db.db[id_file]
-                                   ['real_name'])
+    mime_type = db.db[id_file]['mime_type']
+    real_name = db.db[id_file]['real_name']
+    ua_string = request.headers.get('User-Agent', '')
+    inline = (not _is_cli_client(ua_string)
+              and _is_displayable_in_browser(mime_type))
 
-    # Else keep the regular send file
     return send_from_directory(path,
                                filename,
-                               mimetype=db.db[id_file]['mime_type'],
-                               attachment_filename=db.db[id_file]['real_name'],
-                               as_attachment=True)
+                               mimetype=mime_type,
+                               download_name=real_name,
+                               as_attachment=not inline)
 
 
 def get_all_files(request, config):
@@ -215,7 +235,7 @@ def get_all_files(request, config):
     db = JsonDB(dbfile=config['FILE_LIST'], logger=config['LOGGER_NAME'])
     db.load()
     files_list_infos = {}
-    for k, v in db.db.iteritems():
+    for k, v in db.db.items():
         _infos = get_file_info(id_file=k,
                                config=config,
                                env=request.environ)

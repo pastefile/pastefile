@@ -9,6 +9,9 @@ from pastefile import utils
 from pastefile import controller
 
 default_config = {
+    'LOGGER_NAME': {
+        'value': 'pastefile',
+        'type': str()},
     'UPLOAD_FOLDER': {
         'value': '/opt/pastefile/files',
         'type': str()},
@@ -30,9 +33,6 @@ default_config = {
     'DISABLED_FEATURE': {
         'value': 'ls',
         'type': list()},
-    'DISPLAY_FOR': {
-        'value': 'chrome,firefox',
-        'type': list()}
     }
 app = Flask("pastefile")
 LOG = app.logger
@@ -47,7 +47,7 @@ LOG.addHandler(hdl_stream)
 
 
 def validate(config, default):
-    for config_name, value in config.iteritems():
+    for config_name, value in config.items():
         if config_name not in default.keys():
             continue
         if default[config_name]['type'] == list() and type(value) == str:
@@ -55,7 +55,7 @@ def validate(config, default):
 
 
 def set_default(_app, default):
-    for config_name, _default in default.iteritems():
+    for config_name, _default in default.items():
         _app.config[config_name] = os.getenv(config_name, _default['value'])
 
 
@@ -107,7 +107,7 @@ if not os.getenv('TESTING') == 'TRUE':
     LOG.info("Directories OK")
 
 LOG.warning("===== Running config =====")
-for c, v in app.config.iteritems():
+for c, v in app.config.items():
     LOG.warning("%s: %s" % (c, v))
 
 
