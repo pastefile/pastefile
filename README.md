@@ -15,8 +15,8 @@ See [dev.md](dev.md) for local development and how to run the tests.
 # Installation
 
 The supported production deployment is the bundled Docker image. It packages
-nginx + uwsgi + pastefile and is configured entirely through environment
-variables.
+nginx + uwsgi + pastefile and is configured through environment variables or
+an optional config file (see [Options](#options)).
 
 Pull and run the image from Docker Hub:
 
@@ -52,6 +52,10 @@ docker run -d --name pastefile -p 80:80 \
   -e DISABLED_FEATURE=ls,delete \
   pastefile/pastefile
 ```
+
+`DISABLED_FEATURE` is comma-separated; allowed values are `ls` and `delete`.
+Its default is `ls` (so `/ls` is off out of the box) — pass
+`-e DISABLED_FEATURE=""` to enable it.
 
 Alternatively, mount a config file and point `PASTEFILE_SETTINGS` at it
 (takes precedence over env vars for the keys it defines):
@@ -126,6 +130,9 @@ config-file equivalent — set them with `docker run -e ...`.
 
 The examples below assume the container is reachable at `http://localhost`;
 replace it with your own host or domain.
+
+The upload endpoint returns a URL whose last path component is the file's
+**md5 hash** — that's the `<id>` referenced in the URLs below.
 
 Upload a file:
 ```bash
