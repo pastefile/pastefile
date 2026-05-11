@@ -50,7 +50,7 @@ def validate(config, default):
     for config_name, value in config.items():
         if config_name not in default.keys():
             continue
-        if default[config_name]['type'] == list() and type(value) == str:
+        if isinstance(default[config_name]['type'], list) and isinstance(value, str):
             config[config_name] = [i.strip() for i in value.split(',')]
 
 

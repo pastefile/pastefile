@@ -92,8 +92,8 @@ def get_file_info(id_file, config, env):
             'url': "%s/%s" % (utils.build_base_url(env=env), id_file)
         }
         return file_infos
-    except:
-        LOG.error('Unable to gather infos for file %s' % id_file)
+    except (KeyError, OSError, ValueError) as e:
+        LOG.error('Unable to gather infos for file %s: %s' % (id_file, e))
         return False
 
 
