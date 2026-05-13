@@ -11,4 +11,4 @@ DISABLED_FEATURE = 'ls'
 # When true, upload responses and /<id>/infos URLs include the file's
 # extension (e.g. http://.../<md5>.png). Routes always accept both
 # /<md5> and /<md5>.<ext>.
-EXPOSE_EXTENSION = 'false'
+EXPOSE_EXTENSION = 'true'

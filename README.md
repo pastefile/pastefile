@@ -75,7 +75,7 @@ quoted with `"..."` (see [pastefile.cfg.sample](pastefile.cfg.sample)).
 | `TMP_FOLDER`       | `/data/tmp`                      | Where files are buffered during the transfer (before being moved to `UPLOAD_FOLDER`).  |
 | `EXPIRE`           | `86400` (1 day)                  | How long files are retained, in seconds.                                               |
 | `DISABLED_FEATURE` | `ls`                             | Comma-separated list of disabled endpoints. Allowed: `delete`, `ls`. ⚠️ `/ls` is **disabled by default**; pass `DISABLED_FEATURE=""` to enable it. |
-| `EXPOSE_EXTENSION` | `false`                          | When truthy, upload responses and `/<id>/infos` URLs append the file's extension (e.g. `…/<md5>.png`). The route always accepts both `/<md5>` and `/<md5>.<ext>` regardless of this setting (the extension is cosmetic). |
+| `EXPOSE_EXTENSION` | `true`                           | When truthy, upload responses and `/<id>/infos` URLs append the file's extension (e.g. `…/<md5>.png`). Set to `false` to get plain `<md5>` URLs. The route always accepts both `/<md5>` and `/<md5>.<ext>` regardless of this setting (the extension is cosmetic). |
 
 > **Notes**
 > - The data directory (`/data` by default) must be writable by the uwsgi

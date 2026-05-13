@@ -32,7 +32,7 @@ default_config = {
         'value': 'ls',
         'type': list()},
     'EXPOSE_EXTENSION': {
-        'value': 'false',
+        'value': 'true',
         'type': str()},
     }
 app = Flask("pastefile")
