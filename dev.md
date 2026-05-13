@@ -4,7 +4,8 @@ This document covers:
 
 - Running pastefile locally without packaging it as a container.
 - Running the test suite.
-- Building and publishing the Docker image.
+- Building and running the dev Docker image.
+- Releasing a new version (tag → build → push).
 
 The supported production path is the pre-built Docker image (see
 [README.md](README.md)).
@@ -143,12 +144,21 @@ unless you explicitly override it in a pod spec.
 If you build without passing `--build-arg VERSION=...` (or set
 `VERSION=dev` via the dev compose), the footer shows `dev`.
 
-## Publishing the image to Docker Hub
+## Releasing a new version
 
-The release flow takes the current git tag, builds an image stamped with
-it, tags it both as the version and `latest`, and pushes both. Run this
-from a clean checkout of the tagged commit (otherwise `git describe`
-yields a `-dirty` suffix):
+No source file needs to be edited to bump the version. The release flow
+is entirely driven by git tags:
+
+**1. Tag the commit you want to release** (annotated tags only — the
+release notes live in the tag message):
+
+```bash
+git tag -a v1.0.1 -m "v1.0.1 - what changed"
+git push origin v1.0.1
+```
+
+**2. Build the image from that clean, tagged checkout** (a dirty tree
+would produce a `-dirty` suffix in `git describe`):
 
 ```bash
 docker login
@@ -158,15 +168,15 @@ docker build --build-arg VERSION="$VERSION" \
     -t pastefile/pastefile:"$VERSION" \
     -t pastefile/pastefile:latest \
     .
+```
 
+**3. Push both the versioned tag and `latest`** to Docker Hub:
+
+```bash
 docker push pastefile/pastefile:"$VERSION"
 docker push pastefile/pastefile:latest
 ```
 
-To create a new release: bump nothing in source — just tag git and push:
-
-```bash
-git tag v1.0.1
-git push origin v1.0.1
-# Then re-run the build + push block above.
-```
+The version baked at build time is what the running container reports
+in the UI footer and (eventually) any `/version` endpoint — see
+[Versioning](#versioning) above for the mechanism.
