@@ -27,12 +27,10 @@ docker compose up -d
 ```
 
 This pulls `pastefile/pastefile:latest` from Docker Hub, exposes nginx on
-host port `80`, and persists uploaded files and the json DB in `./data/`
-on the host (next to the compose file).
-
-> The host data directory is created on first run; it must be writable by
-> the in-container uwsgi process (uid 33 / gid 33 = `www-data`). If you
-> see permission errors, run once: `sudo chown -R 33:33 ./data`.
+host port `80`, and persists uploaded files + the json DB in `./data/`
+on the host (next to the compose file, bind-mounted at `/data` inside
+the container). The entrypoint chowns that directory to the in-container
+uwsgi user (uid 33) on every start, so no manual `chown` is required.
 
 ## Customizing
 
@@ -70,18 +68,21 @@ quoted with `"..."` (see [pastefile.cfg.sample](pastefile.cfg.sample)).
 
 ## Application config
 
-| Parameter          | Default                                  | Usage                                                                                  |
-|--------------------|------------------------------------------|----------------------------------------------------------------------------------------|
-| `UPLOAD_FOLDER`    | `/opt/pastefile/files`                   | Where uploaded files are stored.                                                       |
-| `FILE_LIST`        | `/opt/pastefile/uploaded_files_jsondb`   | The file that acts as the DB (jsondb).                                                 |
-| `TMP_FOLDER`       | `/opt/pastefile/tmp`                     | Where files are buffered during the transfer (before being moved to `UPLOAD_FOLDER`).  |
-| `EXPIRE`           | `86400` (1 day)                          | How long files are retained, in seconds.                                               |
-| `LOG`              | `/opt/pastefile/pastefile.log`           | Path to the log file.                                                                  |
-| `DISABLED_FEATURE` | `ls`                                     | Comma-separated list of disabled endpoints. Allowed: `delete`, `ls`. ⚠️ `/ls` is **disabled by default**; pass `DISABLED_FEATURE=""` to enable it. |
+| Parameter          | Default                          | Usage                                                                                  |
+|--------------------|----------------------------------|----------------------------------------------------------------------------------------|
+| `UPLOAD_FOLDER`    | `/data/files`                    | Where uploaded files are stored.                                                       |
+| `FILE_LIST`        | `/data/uploaded_files_jsondb`    | The file that acts as the DB (jsondb).                                                 |
+| `TMP_FOLDER`       | `/data/tmp`                      | Where files are buffered during the transfer (before being moved to `UPLOAD_FOLDER`).  |
+| `EXPIRE`           | `86400` (1 day)                  | How long files are retained, in seconds.                                               |
+| `DISABLED_FEATURE` | `ls`                             | Comma-separated list of disabled endpoints. Allowed: `delete`, `ls`. ⚠️ `/ls` is **disabled by default**; pass `DISABLED_FEATURE=""` to enable it. |
 
 > **Notes**
-> - The upload directory and the db file must be writable by the uwsgi
->   process (uid `33` / gid `33` in the Docker image).
+> - The data directory (`/data` by default) must be writable by the uwsgi
+>   process (uid `33` / gid `33` in the Docker image). The entrypoint
+>   `chown`s it on every start, so this is handled automatically.
+> - **Logs** go to stderr and are captured by `docker logs`; there's no
+>   file-logging by default. If you need a file, redirect the container
+>   logs externally (e.g. `docker compose logs -f > pastefile.log`).
 > - **Performance**: pastefile uses `shutil.move`. Put `TMP_FOLDER` and
 >   `UPLOAD_FOLDER` on the same filesystem so the move stays a rename
 >   instead of a copy.

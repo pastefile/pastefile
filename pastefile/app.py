@@ -13,13 +13,13 @@ default_config = {
         'value': 'pastefile',
         'type': str()},
     'UPLOAD_FOLDER': {
-        'value': '/opt/pastefile/files',
+        'value': '/data/files',
         'type': str()},
     'FILE_LIST': {
-        'value': '/opt/pastefile/uploaded_files_jsondb',
+        'value': '/data/uploaded_files_jsondb',
         'type': str()},
     'TMP_FOLDER': {
-        'value': '/opt/pastefile/tmp',
+        'value': '/data/tmp',
         'type': str()},
     'EXPIRE': {
         'value': '86400',
@@ -27,16 +27,16 @@ default_config = {
     'DEBUG_PORT': {
         'value': '5000',
         'type': str()},
-    'LOG': {
-        'value': '/opt/pastefile/pastefile.log',
-        'type': str()},
     'DISABLED_FEATURE': {
         'value': 'ls',
         'type': list()},
     }
 app = Flask("pastefile")
+# Logs go to stderr (captured by 'docker logs'). Replace Flask's default
+# handler with our own so we don't get every line twice.
+app.logger.handlers.clear()
 LOG = app.logger
-LOG.setLevel(logging.DEBUG)
+LOG.setLevel(logging.INFO)
 hdl_stream = logging.StreamHandler()
 hdl_stream.setLevel(logging.INFO)
 formatter_stream = logging.Formatter('%(asctime)s - '
@@ -60,7 +60,7 @@ def set_default(_app, default):
 
 
 def init_check_directories(_app):
-    for key in ["UPLOAD_FOLDER", "FILE_LIST", "TMP_FOLDER", "LOG"]:
+    for key in ["UPLOAD_FOLDER", "FILE_LIST", "TMP_FOLDER"]:
         directory = _app.config[key].rstrip('/')
         if not os.path.isdir(os.path.dirname(directory)):
             LOG.error("'%s' doesn't exist or is not a directory" %

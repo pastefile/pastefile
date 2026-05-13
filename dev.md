@@ -59,8 +59,17 @@ Or via tox (runs the tests and `flake8`):
 
 A dev compose file ([docker-compose.dev.yml](docker-compose.dev.yml)) is
 provided. It builds the image from this repo's Dockerfile instead of
-pulling from Docker Hub, exposes the service on host port `8080` so it
-does not clash with a prod instance, and enables `/ls` for easier testing.
+pulling from Docker Hub, exposes the service on host port `8080`, and
+enables `/ls` for easier testing.
+
+It also **bind-mounts the repo source over `/var/www/pastefile`**, so the
+running container always serves the code on your host — no rebuild needed
+when you edit a `.py` file. uwsgi caches imported modules, so after editing
+restart the workers:
+
+```bash
+docker compose -f docker-compose.dev.yml restart
+```
 
 Build and start:
 
@@ -75,12 +84,45 @@ curl -F file=@/etc/hostname http://localhost:8080
 curl http://localhost:8080/ls
 ```
 
-Tear down (keeps the data volume) or with `-v` (also drops the data):
+Tear down (data is in `./data-dev/` on the host; delete that directory if
+you also want to drop the data):
 
 ```bash
 docker compose -f docker-compose.dev.yml down
-docker compose -f docker-compose.dev.yml down -v
 ```
+
+### Running the tests inside the dev container
+
+The test suite uses `app.test_client()` (in-process), not real HTTP, so
+it doesn't go through nginx/uwsgi — it just needs Python + the deps.
+Running it on the host in a venv (see [previous section](#running-the-tests))
+is the fastest loop.
+
+If you instead want to run the tests in the exact same Python environment
+the production image ships (Debian Trixie, Python 3.13, pinned versions),
+do it via `docker exec` against the running dev container. `pytest` is not
+shipped in the prod image; install it once:
+
+```bash
+docker exec -w /var/www/pastefile pastefile-dev \
+    pip install --break-system-packages --ignore-installed pytest
+```
+
+`--ignore-installed` is needed because some pytest dependencies (`packaging`,
+...) are managed by dpkg and would otherwise refuse to be re-installed.
+
+Then run the suite:
+
+```bash
+docker exec -w /var/www/pastefile \
+    -e TESTING=TRUE \
+    -e PASTEFILE_SETTINGS=./pastefile-test.cfg \
+    pastefile-dev \
+    pytest pastefile/tests/ -v
+```
+
+This works because the dev compose bind-mounts the source — the tests pick
+up your local edits without rebuilding.
 
 ## Publishing the image to Docker Hub
 

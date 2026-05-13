@@ -17,9 +17,13 @@ services:
     ports:
       - "8080:80"
     volumes:
-      # Host-mounted data dir. Must be writable by uid 33 inside the
-      # container; if you hit permission errors, run once:
-      #   sudo chown -R 33:33 ./data-dev
-      - ./data-dev:/opt/pastefile
+      # Host-mounted data dir. The entrypoint chowns this to uid 33 at
+      # startup, so no manual chown is needed.
+      - ./data-dev:/data
+      # Mount the repo source over the image's copy so edits show up
+      # without rebuilding. uwsgi caches Python modules, so after
+      # editing run: docker compose -f docker-compose.dev.yml restart
+      - ./:/var/www/pastefile
     environment:
-      DISABLED_FEATURE: ""   # enable /ls for testing
+      DISABLED_FEATURE: ""           # enable /ls for testing
+      PYTHONDONTWRITEBYTECODE: "1"   # keep host source dir free of __pycache__

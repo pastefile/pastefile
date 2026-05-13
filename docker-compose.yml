@@ -14,11 +14,9 @@ services:
     ports:
       - "80:80"
     volumes:
-      # Persist uploaded files and the json DB on the host.
-      # The directory is created on first run; it must be writable by the
-      # uwsgi process inside the container (uid 33 / gid 33 = www-data).
-      # If you hit permission errors, run once: sudo chown -R 33:33 ./data
-      - ./data:/opt/pastefile
+      # Persist uploaded files and the json DB on the host. The entrypoint
+      # chowns this dir to the uwsgi user (uid 33) on every start.
+      - ./data:/data
       # Optional: mount your own config file instead of using env vars.
       # - ./pastefile.cfg:/etc/pastefile.cfg:ro
     environment: {}

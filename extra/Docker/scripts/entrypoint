@@ -20,6 +20,10 @@ envsubst '$NGINX_WORKER_PROCESSES $NGINX_WORKER_CONNECTIONS $NGINX_KEEPALIVE_TIM
 envsubst '$UWSGI_CONNECT_TIMEOUT $UWSGI_READ_TIMEOUT $UWSGI_SEND_TIMEOUT $NGINX_DEFAULT_PORT $NGINX_APP_NAME $UWSGI_SOCK $MAX_FILE_SIZE' < /opt/pastefile/vhost.conf.template > /etc/nginx/conf.d/pastefile.conf
 nginx
 
+# /data holds uploaded files + the json DB and is bind-mountable.
+# Make sure the uwsgi user (uid 33) owns it so the app can write on every start.
+chown -R 33:33 /data
+
 exec uwsgi -s $UWSGI_SOCK \
 -w pastefile.app:app \
 --chdir /var/www/pastefile \
