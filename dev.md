@@ -55,6 +55,11 @@ Or via tox (runs the tests and `flake8`):
 .venv/bin/tox
 ```
 
+You can also run the suite inside the dev Docker container if you want
+to validate against the exact Python environment shipped by the image —
+see [Running the tests inside the dev container](#running-the-tests-inside-the-dev-container)
+below.
+
 ## Running the Docker image locally
 
 A dev compose file ([docker-compose.dev.yml](docker-compose.dev.yml)) is
