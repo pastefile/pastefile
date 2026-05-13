@@ -166,7 +166,7 @@ docker push pastefile/pastefile:latest
 To create a new release: bump nothing in source — just tag git and push:
 
 ```bash
-git tag v0.2.0
-git push origin v0.2.0
+git tag v1.0.1
+git push origin v1.0.1
 # Then re-run the build + push block above.
 ```
