@@ -14,8 +14,11 @@ services:
     ports:
       - "80:80"
     volumes:
-      # Persist uploaded files and the json DB across container restarts.
-      - pastefile-data:/opt/pastefile
+      # Persist uploaded files and the json DB on the host.
+      # The directory is created on first run; it must be writable by the
+      # uwsgi process inside the container (uid 33 / gid 33 = www-data).
+      # If you hit permission errors, run once: sudo chown -R 33:33 ./data
+      - ./data:/opt/pastefile
       # Optional: mount your own config file instead of using env vars.
       # - ./pastefile.cfg:/etc/pastefile.cfg:ro
     environment: {}
@@ -33,6 +36,3 @@ services:
       # UWSGI_PROCESSES: "4"       # ~2x CPU cores; caps concurrent uploads
       # UWSGI_READ_TIMEOUT: "60s"
       # UWSGI_SEND_TIMEOUT: "60s"
-
-volumes:
-  pastefile-data:

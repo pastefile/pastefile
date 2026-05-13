@@ -17,9 +17,9 @@ services:
     ports:
       - "8080:80"
     volumes:
-      - pastefile-data-dev:/opt/pastefile
+      # Host-mounted data dir. Must be writable by uid 33 inside the
+      # container; if you hit permission errors, run once:
+      #   sudo chown -R 33:33 ./data-dev
+      - ./data-dev:/opt/pastefile
     environment:
       DISABLED_FEATURE: ""   # enable /ls for testing
-
-volumes:
-  pastefile-data-dev:

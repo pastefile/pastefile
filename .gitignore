@@ -4,3 +4,5 @@
 pastefile.egg-info/
 /tests/
 pastefile.log
+/data/
+/data-dev/

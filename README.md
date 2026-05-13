@@ -27,8 +27,12 @@ docker compose up -d
 ```
 
 This pulls `pastefile/pastefile:latest` from Docker Hub, exposes nginx on
-host port `80`, and persists uploaded files and the json DB in a named
-volume (`pastefile-data`).
+host port `80`, and persists uploaded files and the json DB in `./data/`
+on the host (next to the compose file).
+
+> The host data directory is created on first run; it must be writable by
+> the in-container uwsgi process (uid 33 / gid 33 = `www-data`). If you
+> see permission errors, run once: `sudo chown -R 33:33 ./data`.
 
 ## Customizing
 
