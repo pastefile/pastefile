@@ -31,6 +31,9 @@ default_config = {
     'DISABLED_FEATURE': {
         'value': 'ls',
         'type': list()},
+    'EXPOSE_EXTENSION': {
+        'value': 'false',
+        'type': str()},
     }
 app = Flask("pastefile")
 # Logs go to stderr (captured by 'docker logs'). Replace Flask's default
@@ -127,7 +130,8 @@ def upload_file():
 
 @app.route('/<id_file>/infos', methods=['GET'])
 def display_file_infos(id_file):
-    file_infos = controller.get_file_info(id_file=id_file,
+    md5_only = os.path.splitext(id_file)[0]
+    file_infos = controller.get_file_info(id_file=md5_only,
                                           config=app.config,
                                           env=request.environ)
     if not file_infos:
@@ -137,9 +141,12 @@ def display_file_infos(id_file):
 
 @app.route('/<id_file>', methods=['GET', 'DELETE'])
 def get_or_delete_file(id_file):
+    # Accept both /<md5> and /<md5>.<ext>; the extension is cosmetic and
+    # ignored for the DB lookup. See EXPOSE_EXTENSION in the docs.
+    md5_only = os.path.splitext(id_file)[0]
     if request.method == 'GET':
         return controller.get_file(request=request,
-                                   id_file=id_file,
+                                   id_file=md5_only,
                                    config=app.config)
     if request.method == 'DELETE':
         try:
@@ -150,7 +157,7 @@ def get_or_delete_file(id_file):
         except (KeyError, TypeError):
             pass
         return controller.delete_file(request=request,
-                                      id_file=id_file,
+                                      id_file=md5_only,
                                       dbfile=app.config['FILE_LIST'])
 
 

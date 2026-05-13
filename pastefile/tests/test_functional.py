@@ -364,6 +364,67 @@ class FlaskrTestCase(unittest.TestCase):
                           headers={'User-Agent': 'curl'})
         self.assertEqual(rv.status, '404 NOT FOUND')
 
+    def test_expose_extension(self):
+        # Earlier tests leave DISABLED_FEATURE polluted in the shared
+        # Flask config; reset it so DELETE actually runs below.
+        flaskr.app.config['DISABLED_FEATURE'] = ['']
+        # Default (disabled): the upload URL is just the md5.
+        _file = osjoin(self.testdir, 'a')
+        md5_a = write_random_file(_file)
+        rv = self.app.post('/', data={'file': (open(_file, 'rb'),
+                                               'plain.txt'), })
+        self.assertEqual(rv.get_data(),
+                         ("http://localhost/%s\n" % md5_a).encode('utf-8'))
+
+        # Enable EXPOSE_EXTENSION: the upload URL gets the file's extension.
+        flaskr.app.config['EXPOSE_EXTENSION'] = 'true'
+        try:
+            _file = osjoin(self.testdir, 'b')
+            md5_b = write_random_file(_file)
+            rv = self.app.post('/', data={'file': (open(_file, 'rb'),
+                                                   'picture.png'), })
+            self.assertEqual(
+                rv.get_data(),
+                ("http://localhost/%s.png\n" % md5_b).encode('utf-8'))
+
+            # The /infos endpoint exposes the same URL.
+            rv = self.app.get('/%s/infos' % md5_b,
+                              headers={'User-Agent': 'curl'})
+            rv_json = json.loads(rv.get_data())
+            self.assertEqual(rv_json['url'],
+                             "http://localhost/%s.png" % md5_b)
+
+            # GET works with the extension in the URL.
+            rv = self.app.get('/%s.png' % md5_b,
+                              headers={'User-Agent': 'curl'})
+            self.assertEqual(rv.status, '200 OK')
+
+            # GET also works with any extension (cosmetic only).
+            rv = self.app.get('/%s.anything' % md5_b,
+                              headers={'User-Agent': 'curl'})
+            self.assertEqual(rv.status, '200 OK')
+
+            # GET still works without any extension (backwards compat).
+            rv = self.app.get('/%s' % md5_b,
+                              headers={'User-Agent': 'curl'})
+            self.assertEqual(rv.status, '200 OK')
+
+            # A file with no extension stays at just the md5 (no trailing dot).
+            _file = osjoin(self.testdir, 'c')
+            md5_c = write_random_file(_file)
+            rv = self.app.post('/', data={'file': (open(_file, 'rb'),
+                                                   'Makefile'), })
+            self.assertEqual(rv.get_data(),
+                             ("http://localhost/%s\n" % md5_c).encode('utf-8'))
+
+            # DELETE also accepts the extension form.
+            rv = self.app.delete('/%s.png' % md5_b,
+                                 headers={'User-Agent': 'curl'})
+            self.assertIn(('%s deleted' % md5_b).encode('utf-8'),
+                          rv.get_data())
+        finally:
+            flaskr.app.config['EXPOSE_EXTENSION'] = 'false'
+
 
 if __name__ == '__main__':
     unittest.main()

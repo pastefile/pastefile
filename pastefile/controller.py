@@ -40,6 +40,19 @@ def _is_displayable_in_browser(mime_type):
     return mime_type.startswith(DISPLAYABLE_MIME_PREFIXES)
 
 
+def _url_slug(md5, real_name, config):
+    """Return the last path component for a file's URL.
+
+    By default it's just the md5. When EXPOSE_EXTENSION is enabled and the
+    real name has an extension, append it (e.g. 'abc123.png') so the URL
+    hints at the file type to clients and proxies.
+    """
+    if not strtobool(config.get('EXPOSE_EXTENSION', 'false')):
+        return md5
+    _, ext = os.path.splitext(real_name or '')
+    return md5 + ext if ext else md5
+
+
 def get_infos_file_from_md5(md5, dbfile):
     # Open JsonDB for read only
     db = JsonDB(dbfile=dbfile)
@@ -89,7 +102,8 @@ def get_file_info(id_file, config, env):
             'mime_type': infos['mime_type'],
             'type': infos['type'],
             'size': size,
-            'url': "%s/%s" % (utils.build_base_url(env=env), id_file)
+            'url': "%s/%s" % (utils.build_base_url(env=env),
+                              _url_slug(id_file, infos['real_name'], config))
         }
         return file_infos
     except (KeyError, OSError, ValueError) as e:
@@ -175,7 +189,7 @@ def upload_file(request, config):
     LOG.info("[POST] Client %s has successfully uploaded: %s (%s)"
              % (request.remote_addr, storage_full_filename, file_md5))
     return "%s/%s\n" % (utils.build_base_url(env=request.environ),
-                        file_md5)
+                        _url_slug(file_md5, secure_name, config))
 
 
 def delete_file(request, id_file, dbfile):
