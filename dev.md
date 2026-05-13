@@ -129,18 +129,44 @@ docker exec -w /var/www/pastefile \
 This works because the dev compose bind-mounts the source — the tests pick
 up your local edits without rebuilding.
 
+## Versioning
+
+The version displayed in the UI footer is baked into the image at build
+time via a Docker `ARG VERSION` → `ENV PASTEFILE_VERSION` chain. The
+Python package reads `os.getenv("PASTEFILE_VERSION", "dev")` from
+[pastefile/__init__.py](pastefile/__init__.py).
+
+This works the same in `docker run`, `docker compose`, and Kubernetes
+deployments — the env var is part of the image, picked up automatically
+unless you explicitly override it in a pod spec.
+
+If you build without passing `--build-arg VERSION=...` (or set
+`VERSION=dev` via the dev compose), the footer shows `dev`.
+
 ## Publishing the image to Docker Hub
 
-After building locally and testing, retag and push to the registry:
+The release flow takes the current git tag, builds an image stamped with
+it, tags it both as the version and `latest`, and pushes both. Run this
+from a clean checkout of the tagged commit (otherwise `git describe`
+yields a `-dirty` suffix):
 
 ```bash
 docker login
 
-# Latest
-docker tag pastefile/pastefile:local pastefile/pastefile:latest
-docker push pastefile/pastefile:latest
+VERSION=$(git describe --tags --always --dirty)
+docker build --build-arg VERSION="$VERSION" \
+    -t pastefile/pastefile:"$VERSION" \
+    -t pastefile/pastefile:latest \
+    .
 
-# Versioned release
-docker tag pastefile/pastefile:local pastefile/pastefile:1.0
-docker push pastefile/pastefile:1.0
+docker push pastefile/pastefile:"$VERSION"
+docker push pastefile/pastefile:latest
+```
+
+To create a new release: bump nothing in source — just tag git and push:
+
+```bash
+git tag v0.2.0
+git push origin v0.2.0
+# Then re-run the build + push block above.
 ```

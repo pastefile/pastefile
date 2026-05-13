@@ -11,4 +11,9 @@ COPY ./extra/Docker/configs/nginx.conf.template /opt/pastefile/nginx.conf.templa
 COPY ./extra/Docker/configs/vhost.conf.template /opt/pastefile/vhost.conf.template
 COPY ./extra/Docker/scripts/entrypoint /entrypoint
 
+# Stamp the image with a version. Pass --build-arg VERSION=$(git describe --tags --always --dirty)
+# from CI/the release script. Falls back to "dev" if not provided.
+ARG VERSION=dev
+ENV PASTEFILE_VERSION=$VERSION
+
 ENTRYPOINT ["/entrypoint"]

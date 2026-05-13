@@ -7,6 +7,7 @@ from flask import Flask, request, abort, jsonify
 from flask import render_template
 from pastefile import utils
 from pastefile import controller
+from pastefile import __version__ as PASTEFILE_VERSION
 
 default_config = {
     'LOGGER_NAME': {
@@ -186,5 +187,6 @@ def page_not_found(e):
             'pastefile() { curl -F file=@"$1" %s; }' % base_url),
     )
     context = {'user_agent': request.headers.get('User-Agent', ''),
-               'helps': helps}
+               'helps': helps,
+               'version': PASTEFILE_VERSION}
     return render_template('404.html', **context), 404

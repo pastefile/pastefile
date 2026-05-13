@@ -11,7 +11,11 @@
 
 services:
   pastefile:
-    build: .
+    build:
+      context: .
+      args:
+        # Override with: VERSION=$(git describe --tags --always --dirty) docker compose -f ... build
+        VERSION: ${VERSION:-dev}
     image: pastefile/pastefile:local
     container_name: pastefile-dev
     ports:
