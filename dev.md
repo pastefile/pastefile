@@ -55,31 +55,45 @@ Or via tox (runs the tests and `flake8`):
 .venv/bin/tox
 ```
 
-## Building and publishing the Docker image
+## Running the Docker image locally
 
-Build the image locally (from the repo root, where the Dockerfile lives):
+A dev compose file ([docker-compose.dev.yml](docker-compose.dev.yml)) is
+provided. It builds the image from this repo's Dockerfile instead of
+pulling from Docker Hub, exposes the service on host port `8080` so it
+does not clash with a prod instance, and enables `/ls` for easier testing.
+
+Build and start:
 
 ```bash
-docker build --rm -t pastefile/pastefile .
+docker compose -f docker-compose.dev.yml up -d --build
 ```
 
-Smoke test it:
+Smoke test:
 
 ```bash
-docker run --rm -p 8080:80 pastefile/pastefile
 curl -F file=@/etc/hostname http://localhost:8080
+curl http://localhost:8080/ls
 ```
 
-Publish to Docker Hub (requires a prior `docker login`):
+Tear down (keeps the data volume) or with `-v` (also drops the data):
 
 ```bash
-docker push pastefile/pastefile
+docker compose -f docker-compose.dev.yml down
+docker compose -f docker-compose.dev.yml down -v
 ```
 
-For a release, tag with a version and push both tags:
+## Publishing the image to Docker Hub
+
+After building locally and testing, retag and push to the registry:
 
 ```bash
-docker build --rm -t pastefile/pastefile:1.0 -t pastefile/pastefile:latest .
-docker push pastefile/pastefile:1.0
+docker login
+
+# Latest
+docker tag pastefile/pastefile:local pastefile/pastefile:latest
 docker push pastefile/pastefile:latest
+
+# Versioned release
+docker tag pastefile/pastefile:local pastefile/pastefile:1.0
+docker push pastefile/pastefile:1.0
 ```

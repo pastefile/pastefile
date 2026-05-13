@@ -18,54 +18,36 @@ The supported production deployment is the bundled Docker image. It packages
 nginx + uwsgi + pastefile and is configured through environment variables or
 an optional config file (see [Options](#options)).
 
-Pull and run the image from Docker Hub:
+A ready-to-use compose file ships in this repo:
 
 ```bash
-docker pull pastefile/pastefile
-docker run -d --name pastefile -p 80:80 pastefile/pastefile
+git clone https://github.com/pastefile/pastefile.git
+cd pastefile
+docker compose up -d
 ```
 
-This minimal command works out of the box, but anything written to the
-container is lost when the container is removed. For a real deployment you
-want a persistent volume and, optionally, a few env-var overrides.
+This pulls `pastefile/pastefile:latest` from Docker Hub, exposes nginx on
+host port `80`, and persists uploaded files and the json DB in a named
+volume (`pastefile-data`).
 
-## With persistent storage
+## Customizing
 
-Uploaded files and the json DB live under `/opt/pastefile/` inside the
-container. Mount a named volume there so they survive restarts:
+[docker-compose.yml](docker-compose.yml) ships with every common tunable
+commented out, ready to uncomment. Typical things you'll want to change:
 
-```bash
-docker run -d --name pastefile -p 80:80 \
-  -v pastefile-data:/opt/pastefile \
-  pastefile/pastefile
-```
-
-## Overriding configuration
-
-Every key from the [Options](#options) tables can be passed with `-e`:
-
-```bash
-docker run -d --name pastefile -p 80:80 \
-  -v pastefile-data:/opt/pastefile \
-  -e EXPIRE=604800 \
-  -e MAX_FILE_SIZE=2G \
-  -e DISABLED_FEATURE=ls,delete \
-  pastefile/pastefile
-```
+- The host port mapping (`ports:` section).
+- Application config (`EXPIRE`, `DISABLED_FEATURE`, ...).
+- Tuning for large uploads (`MAX_FILE_SIZE`, `UWSGI_PROCESSES`, ...).
+- Mounting a config file (set the volume and `PASTEFILE_SETTINGS`).
 
 `DISABLED_FEATURE` is comma-separated; allowed values are `ls` and `delete`.
-Its default is `ls` (so `/ls` is off out of the box) — pass
-`-e DISABLED_FEATURE=""` to enable it.
+Its default is `ls` (so `/ls` is off out of the box) — set
+`DISABLED_FEATURE: ""` in the compose file to enable it.
 
-Alternatively, mount a config file and point `PASTEFILE_SETTINGS` at it
-(takes precedence over env vars for the keys it defines):
+After editing the compose file, re-apply:
 
 ```bash
-docker run -d --name pastefile -p 80:80 \
-  -v $PWD/pastefile.cfg:/etc/pastefile.cfg:ro \
-  -v pastefile-data:/opt/pastefile \
-  -e PASTEFILE_SETTINGS=/etc/pastefile.cfg \
-  pastefile/pastefile
+docker compose up -d
 ```
 
 

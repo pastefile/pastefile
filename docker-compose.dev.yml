@@ -1,0 +1,25 @@
+# Local development for pastefile.
+# Builds the image from this repo's Dockerfile instead of pulling from
+# Docker Hub, and exposes the service on host port 8080 so it does not
+# clash with a production instance.
+#
+# Usage:
+#   docker compose -f docker-compose.dev.yml up -d --build
+#   docker compose -f docker-compose.dev.yml down
+#
+# See dev.md for the full local-dev workflow.
+
+services:
+  pastefile:
+    build: .
+    image: pastefile/pastefile:local
+    container_name: pastefile-dev
+    ports:
+      - "8080:80"
+    volumes:
+      - pastefile-data-dev:/opt/pastefile
+    environment:
+      DISABLED_FEATURE: ""   # enable /ls for testing
+
+volumes:
+  pastefile-data-dev:

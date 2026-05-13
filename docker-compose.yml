@@ -1,0 +1,38 @@
+# Production deployment for pastefile.
+# Pulls the official image from Docker Hub.
+#
+# Usage:
+#   docker compose up -d
+#
+# See README.md#options for the full list of tunables.
+
+services:
+  pastefile:
+    image: pastefile/pastefile:latest
+    container_name: pastefile
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      # Persist uploaded files and the json DB across container restarts.
+      - pastefile-data:/opt/pastefile
+      # Optional: mount your own config file instead of using env vars.
+      # - ./pastefile.cfg:/etc/pastefile.cfg:ro
+    environment: {}
+      # Uncomment the keys you want to override. Defaults are shown.
+      #
+      # Optional config file (mount it via the volumes section above first):
+      # PASTEFILE_SETTINGS: /etc/pastefile.cfg
+      #
+      # Application config -----------------------------------------------
+      # EXPIRE: "86400"            # how long files are kept, in seconds
+      # DISABLED_FEATURE: "ls"     # comma-sep, allowed: ls,delete. "" enables /ls.
+      #
+      # Tuning - bump these together to accept large uploads -------------
+      # MAX_FILE_SIZE: "1G"        # nginx client_max_body_size syntax
+      # UWSGI_PROCESSES: "4"       # ~2x CPU cores; caps concurrent uploads
+      # UWSGI_READ_TIMEOUT: "60s"
+      # UWSGI_SEND_TIMEOUT: "60s"
+
+volumes:
+  pastefile-data:
